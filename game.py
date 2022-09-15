@@ -1,17 +1,12 @@
-import pygame 
-import math
+import pygame,sys
+from random import randint
+
 
 player = pygame.image.load('resources/player/player1.png')
 
-
-pos = pygame.math.Vector2(250,250)
-    
-
-
+spawn_pos = pygame.math.Vector2(250,250)
+pos = spawn_pos.copy()
 clock = pygame.time.Clock()
-
-speed = 4
-
 velocity = pygame.math.Vector2(0,0)
 acceleration = 2.5
 friction = 0.5
@@ -26,30 +21,22 @@ player = pygame.image.load('resources/player/player1.png')
 
 
 class Bullet():
-    def __init__(self, Rect,x,y,velocity,mx,my):
-        self.Rect = Rect
+    def __init__(self,x,y,velocity):
         self.velocity = velocity
-        angle = math.atan2(mx,my)
-        self.dx = math.sin(angle) * speed
-        self.dy = math.cos(angle) * speed
-        self.x = x
-        self.y = y       
+        self.Rect = pygame.Rect(x,y,5,5)
 
     def move_bullet(self):
-        self.x = self.x + self.dx
-        self.y = self.y + self.dy
-        self.Rect.x = int(self.x)
-        self.Rect.y = int(self.y)
-        pass
+        self.Rect.x += self.velocity.x
+        self.Rect.y += self.velocity.y
         
 
         
-                
+            
 
         
 
 
-def draw(screen, bullets):
+def draw(screen, bullets,tiles):
     tile_width = metal_tile.get_width()
     tile_height = metal_tile.get_height()
 
@@ -57,15 +44,20 @@ def draw(screen, bullets):
     for i in range(width // tile_width + 1):
         for j in range(height // tile_height + 1):
             
-            x = i * tile_width # 0, tile_width, 2 * tile_width, 3 * tile_widt
-            y = j * tile_height
-
+            x = i * tile_width - pos.x + spawn_pos.x # 0, tile_width, 2 * tile_width, 3 * tile_widt
+            y = j * tile_height - pos.y + spawn_pos.y
             screen.blit(metal_tile,(x,y))
+        
+    
+        
+
+    screen.blit(player,(spawn_pos.x,spawn_pos.y))
+
     for bullet in bullets:
         pygame.draw.rect(screen, (0,0,255), bullet.Rect)
-    
-    screen.blit(player,(pos.x,pos.y))
+
     pygame.display.update()
+
 
 
 def player_controls(bullets):
@@ -86,26 +78,35 @@ def player_controls(bullets):
         input_vector.x += 1
     if input_vector != pygame.math.Vector2(0,0):
         input_vector = input_vector.normalize()
-        
         velocity += input_vector * acceleration
     # apply friction
     velocity -= friction * velocity
     #update position using velocity
     pos += velocity
+
+    if pos.x > 900:
+        pos.x = 900
+    elif pos.x < 0:
+        pos.x = 0
+
+    if pos.y > 500:
+        pos.y = 500
+    elif pos.y < 0:
+        pos.y = 0
+
+        
     
     mouse_pos = pygame.math.Vector2(0,0)
 
     mouse_pos.x, mouse_pos.y = pygame.mouse.get_pos()
     mouse_press = pygame.mouse.get_pressed()
     if mouse_pos != pygame.math.Vector2(0,0):
-        mouse_pos = mouse_pos.normalize()
         if mouse_press[0]:
-            x = pos.x
-            y = pos.y
-            rect = pygame.Rect(mouse_pos.x + pos.x,mouse_pos.y + pos.y, 5,5)
-            bullet_velocity = (mouse_pos - pos) * 1
-            bullet = Bullet(rect,bullet_velocity,x,y,mouse_pos.x,mouse_pos.y)
-            bullets.append(bullet)
+            bullet_velocity = (mouse_pos - spawn_pos)
+            if bullet_velocity.length != 0:
+                bullet_velocity = 5 * bullet_velocity.normalize()
+                bullet = Bullet(bullet_velocity.x + spawn_pos.x, bullet_velocity.y + spawn_pos.y, bullet_velocity)
+                bullets.append(bullet)
 
 
     
@@ -115,25 +116,29 @@ def player_controls(bullets):
 def run_game():
     global pos
     global velocity
-
+    tiles = []
     pygame.init()
+
+    
     screen = pygame.display.set_mode((width,height))
     run = True
 
     bullets = []
 
     while run:
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
+                sys.exit()
 
 
 
                 
         
         player_controls(bullets)
-        draw(screen, bullets)
+        draw(screen, bullets,tiles)
         clock.tick(60)
         for bullet in bullets:
             bullet.move_bullet()
@@ -144,4 +149,5 @@ def run_game():
         
 
 if __name__ == '__main__':
+    
     run_game()
