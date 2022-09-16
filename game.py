@@ -2,7 +2,7 @@ import pygame,sys
 from random import randint
 
 
-player = pygame.image.load('resources/player/player1.png')
+
 
 spawn_pos = pygame.math.Vector2(250,250)
 pos = spawn_pos.copy()
@@ -18,8 +18,7 @@ player = pygame.image.load('resources/player/player1.png')
 
 
 
-
-
+    
 class Bullet():
     def __init__(self,x,y,velocity):
         self.velocity = velocity
@@ -28,12 +27,7 @@ class Bullet():
     def move_bullet(self):
         self.Rect.x += self.velocity.x
         self.Rect.y += self.velocity.y
-        
-
-        
-            
-
-        
+               
 
 
 def draw(screen, bullets,tiles):
@@ -109,9 +103,7 @@ def player_controls(bullets):
                 bullets.append(bullet)
 
 
-    
-
-    
+       
 
 def run_game():
     global pos
